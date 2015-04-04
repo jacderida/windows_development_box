@@ -1,0 +1,69 @@
+{
+    "builders": [
+        {
+            "type": "virtualbox-iso",
+            "iso_url": "9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_ENTERPRISE_EVAL_EN-US-IR3_CENA_X64FREE_EN-US_DV9.ISO",
+            "iso_checksum_type": "md5",
+            "iso_checksum": "ee63618e3be220d86b993c1abbcf32eb",
+            "headless": false,
+            "boot_wait": "2m",
+            "ssh_username": "vagrant",
+            "ssh_password": "vagrant",
+            "ssh_wait_timeout": "4h",
+            "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+            "guest_os_type": "Windows81_64",
+            "disk_size": 61440,
+            "floppy_files": [
+                "./answer_files/Autounattend.xml",
+                "./scripts/microsoft-updates.bat",
+                "./scripts/win-updates.ps1",
+                "./scripts/openssh.ps1",
+                "./scripts/chocolatey.bat",
+                "./oracle-cert.cer"
+            ],
+            "vboxmanage": [
+                [
+                    "modifyvm",
+                    "{{.Name}}",
+                    "--memory",
+                    "2048"
+                ],
+                [
+                    "modifyvm",
+                    "{{.Name}}",
+                    "--cpus",
+                    "2"
+                ]
+            ]
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "remote_path": "/tmp/script.bat",
+            "execute_command": "{{.Vars}} cmd /c C:/Windows/Temp/script.bat",
+            "scripts": [
+                "./scripts/vm-guest-tools.bat",
+                "./scripts/vagrant-ssh.bat",
+                "./scripts/enable-rdp.bat",
+                "./scripts/disable-auto-logon.bat"
+            ]
+        },
+        {
+            "type": "shell",
+            "remote_path": "/tmp/script.bat",
+            "execute_command": "{{.Vars}} cmd /c C:/Windows/Temp/script.bat",
+            "scripts": [
+                "./scripts/cleartemp.bat",
+                "./scripts/compact.bat"
+            ]
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "vagrant",
+            "keep_input_artifact": false,
+            "output": "dev_box-windows_8.1-x86_64.box",
+        }
+    ]
+}
